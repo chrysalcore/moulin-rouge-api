@@ -1,0 +1,55 @@
+# Entornos virtuales
+venv/
+env/
+.venv/
+ENV/
+
+# Variables de entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de configuración sensibles
+config.py
+settings.py
+secrets.py
+credentials.py
+config_local.py
+config.ini
+config.json
+config.yaml
+config.yml
+
+# Archivos específicos de credenciales
+smtp_config.py
+email_credentials.py
+*.key
+*.pem
+*.secret
+
+# Cache de Python
+pycache/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Instalaciones y distribuciones
+dist/
+build/
+*.egg-info/
+
+# IDE/Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Bases de datos
+*.db
+*.sqlite3
