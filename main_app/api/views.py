@@ -53,8 +53,8 @@ class CategoryDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = CategorySerializer
     permission_classes = [IsMainUser]
     throttle_classes = [DetailThrottle]
-    queryset = Course.objects.all()
-    lookup_field = 'id'
+    queryset = Category.objects.all()
+    lookup_field = 'name'
 
 class CourseAddView(generics.CreateAPIView):
     serializer_class = CourseSerializer
