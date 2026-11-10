@@ -13,7 +13,6 @@ ENV/
 
 # Archivos de configuración sensibles
 config.py
-settings.py
 secrets.py
 credentials.py
 config_local.py
