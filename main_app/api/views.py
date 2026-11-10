@@ -1,11 +1,20 @@
 from rest_framework import generics, permissions, exceptions
 from rest_framework.response import Response
+from django.db import transaction
+from django.db.models import Avg, Count
 from datetime import timedelta, date
 from main_app.api.serializers import CourseSerializer, ReservationSerializer, DeliverySerializer, CommentSerializer, EventSerializer, CategorySerializer
 from main_app.api.throttling import CourseThrottle, AddThrottle, ListThrottle, CommentThrottle, DetailThrottle
 from main_app.api.pagination import CoursePagination, CommentPagination, InfoPagination
 from main_app.api.permissions import IsAuthorOrAdmin, IsMainUser
 from main_app.models import Course, Reservation, Delivery, Comment, Event, Category
+
+
+def update_course_rating(course):
+    stats = Comment.objects.filter(course=course).aggregate(average=Avg('rating'), total=Count('id'))
+    course.rating = stats['average'] or 0
+    course.ratings_count = stats['total']
+    course.save(update_fields=['rating', 'ratings_count'])
 
 class MainListView(generics.GenericAPIView):
     pagination_class = CoursePagination
@@ -85,14 +94,10 @@ class CommentAddView(generics.CreateAPIView):
         
         if prev_commits.exists():
             raise exceptions.ValidationError('This user has previously committed this course.')
-        if course.ratings_count == 0:
-            course.rating = serializer.validated_data['rating']
-        else:
-            course.rating = (serializer.validated_data['rating'] + course.rating)/2
-        course.ratings_count += 1
-        
-        course.save()
-        serializer.save(course=course, user=user)
+
+        with transaction.atomic():
+            serializer.save(course=course, user=user)
+            update_course_rating(course)
 
 class CommentListView(generics.ListAPIView):
     serializer_class = CommentSerializer
@@ -110,6 +115,17 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     throttle_classes = [CommentThrottle]
     queryset = Comment.objects.all()
     lookup_field = 'id'
+
+    def perform_update(self, serializer):
+        with transaction.atomic():
+            comment = serializer.save()
+            update_course_rating(comment.course)
+
+    def perform_destroy(self, instance):
+        course = instance.course
+        with transaction.atomic():
+            instance.delete()
+            update_course_rating(course)
 
 class ReservationAddView(generics.CreateAPIView):
     serializer_class = ReservationSerializer
