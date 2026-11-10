@@ -3,10 +3,11 @@ from user_app.models import User
 
 class RegisterSerializer(serializers.ModelSerializer):
     password_confirmation = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    verification_code = serializers.IntegerField(write_only=True)
     
     class Meta:
         model = User
-        fields = ['username', 'name', 'email',  'phone_number', 'password', 'password_confirmation']
+        fields = ['username', 'name', 'email',  'phone_number', 'password', 'password_confirmation', 'verification_code']
         extra_kwargs = {
             'password': {'write_only': True}
         }
